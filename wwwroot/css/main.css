@@ -210,7 +210,7 @@ body {
     font-family: 'Playfair Display', serif;
     font-size: clamp(2.2rem, 5vw, 3.8rem);
     font-weight: 700;
-    color: var(--text-dark);
+    color: var(--text-light);
     letter-spacing: 0.02em;
     line-height: 1.1;
     margin: 12px 0 8px;
