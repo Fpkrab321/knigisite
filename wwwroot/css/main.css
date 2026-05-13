@@ -73,7 +73,6 @@ body {
         #1a1a1a 80%, #1a1a1a 100%
     );
     box-shadow: 0 6px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
-    transform: skewY(-1deg) perspective(400px) rotateX(2deg);
     z-index: 5;
     border-bottom: 1px solid rgba(255,255,255,0.2);
 }
@@ -86,13 +85,11 @@ body {
     overflow: hidden;
     margin: 24px 0;
     box-shadow: 0 8px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.4);
-    transform: perspective(500px) rotateX(3deg) translateY(-1px);
     background: #0a0a0a;
 }
 
 .georgibon-3d.footer-ribbon {
     margin: 0 0 24px;
-    transform: perspective(400px) rotateX(1deg);
 }
 
 .ribbon-stripe-3d {
@@ -110,7 +107,6 @@ body {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transform: skewX(-20deg);
     transition: left 0.5s ease;
 }
 
@@ -1262,4 +1258,90 @@ body {
     .birch-decoration {
         display: none;
     }
+
+    /* ===== FOREST BACKGROUND ===== */
+.forest-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+/* Общие стили для деревьев */
+.tree {
+    position: absolute;
+    bottom: 0;
+    width: 180px;
+    height: 80vh;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: bottom center;
+    opacity: 0.22;
+    filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.1));
+    transition: opacity 0.5s ease;
+}
+.tree:hover {
+    opacity: 0.35;
+}
+
+/* БЕРЁЗЫ (белые стволы с чёрточками) */
+.birch {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 600'%3E%3Crect x='85' y='0' width='30' height='600' fill='%23f5f0e8' /%3E%3Cpath d='M85,100 L115,100 M85,200 L115,200 M85,300 L115,300 M85,400 L115,400 M85,500 L115,500' stroke='%232a2a2a' stroke-width='4' fill='none' /%3E%3Cpath d='M95,0 L95,-80 Q100,-120 110,-130' stroke='%234a3f35' stroke-width='6' fill='none' /%3E%3Cpath d='M105,0 L105,-70 Q95,-100 90,-110' stroke='%234a3f35' stroke-width='5' fill='none' /%3E%3Ccircle cx='110' cy='-130' r='12' fill='%236a8761' opacity='0.7' /%3E%3Ccircle cx='90' cy='-110' r='10' fill='%236a8761' opacity='0.6' /%3E%3C/svg%3E");
+}
+.left-birch-1 {
+    left: -40px;
+    width: 160px;
+    bottom: -20px;
+}
+.left-birch-2 {
+    left: 80px;
+    width: 140px;
+    bottom: -50px;
+    opacity: 0.18;
+}
+.right-birch-1 {
+    right: -40px;
+    width: 180px;
+    bottom: -10px;
+}
+.right-birch-2 {
+    right: 60px;
+    width: 130px;
+    bottom: -40px;
+    opacity: 0.16;
+}
+
+/* ДУБЫ (мощные, тёмные) */
+.oak {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 600'%3E%3Crect x='80' y='0' width='40' height='600' fill='%233d2b1a' /%3E%3Cpath d='M80,100 L120,100 M80,200 L120,200 M80,300 L120,300 M80,400 L120,400' stroke='%235a3a1e' stroke-width='6' fill='none' /%3E%3Cpath d='M70,0 L60,-50 Q50,-80 30,-100' stroke='%233d2b1a' stroke-width='10' fill='none' /%3E%3Cpath d='M130,0 L140,-40 Q150,-70 170,-90' stroke='%233d2b1a' stroke-width='12' fill='none' /%3E%3Ccircle cx='30' cy='-100' r='22' fill='%234a6741' opacity='0.5' /%3E%3Ccircle cx='170' cy='-90' r='25' fill='%234a6741' opacity='0.5' /%3E%3C/svg%3E");
+}
+.left-oak {
+    left: -50px;
+    width: 200px;
+    bottom: -30px;
+    opacity: 0.2;
+}
+.right-oak {
+    right: -30px;
+    width: 220px;
+    bottom: -20px;
+    opacity: 0.2;
+}
+
+/* ВЕТКИ, переплетающиеся сверху */
+.branches {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 800' preserveAspectRatio='none'%3E%3Cpath d='M0,80 Q120,120 200,60 Q300,0 400,80 Q500,140 600,60 Q700,0 800,90 Q900,150 1000,70' stroke='%238a7a6a' stroke-width='4' fill='none' opacity='0.2' /%3E%3Cpath d='M50,150 Q180,180 280,110 Q380,50 500,130 Q620,190 720,110 Q820,40 950,120' stroke='%236a8761' stroke-width='3' fill='none' opacity='0.15' /%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: cover;
+    opacity: 0.3;
+    pointer-events: none;
 }
