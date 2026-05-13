@@ -1233,103 +1233,254 @@ body {
     display: block;
 }
 
-/* ===== FOREST BACKGROUND ===== */
-.forest-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
-    background: linear-gradient(to bottom, #111a14 0%, #1a241c 100%); /* Лёгкий фоновый градиент леса */
+/* =========================================================
+   FOREST BACKGROUND v3
+   Кроны деревьев видны сверху, больше объёма и глубины
+   ========================================================= */
+
+:root {
+    --forest-sky-top: #0b120e;
+    --forest-sky-mid: #142018;
+    --forest-sky-bottom: #1b2a1f;
+
+    --forest-vignette: rgba(0, 0, 0, 0.32);
+    --forest-mist: rgba(186, 214, 188, 0.08);
+    --forest-mist-strong: rgba(186, 214, 188, 0.14);
+
+    --tree-shadow: rgba(0, 0, 0, 0.35);
+    --tree-shadow-strong: rgba(0, 0, 0, 0.55);
 }
 
-/* Общие стили для деревьев */
+/* ===================== BASE CONTAINER ===================== */
+
+.forest-bg {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    isolation: isolate;
+    background:
+        radial-gradient(circle at 50% 18%, rgba(114, 148, 100, 0.12) 0%, transparent 28%),
+        radial-gradient(circle at 50% 10%, rgba(180, 220, 180, 0.08) 0%, transparent 18%),
+        linear-gradient(to bottom, var(--forest-sky-top) 0%, var(--forest-sky-mid) 55%, var(--forest-sky-bottom) 100%);
+}
+
+.forest-bg::before {
+    content: "";
+    position: absolute;
+    inset: -10%;
+    background:
+        radial-gradient(circle at 50% 18%, rgba(196, 220, 180, 0.10) 0%, transparent 25%),
+        radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.03) 0%, transparent 14%),
+        radial-gradient(circle at 80% 18%, rgba(255, 255, 255, 0.02) 0%, transparent 16%),
+        linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.05) 100%);
+    filter: blur(12px);
+    opacity: 0.9;
+    animation: mist-drift 18s ease-in-out infinite alternate;
+    z-index: 0;
+}
+
+.forest-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at center, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.10) 68%, var(--forest-vignette) 100%);
+    z-index: 20;
+}
+
+/* ===================== COMMON TREE ===================== */
+
 .tree {
     position: absolute;
     bottom: 0;
-    height: 85vh;
     background-repeat: no-repeat;
-    background-size: contain;
     background-position: bottom center;
-    opacity: 0.35; /* Сделал базу чуть ярче для деталей */
-    filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.2));
+    background-size: contain;
     transform-origin: bottom center;
-    transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;
+    opacity: var(--tree-opacity, 0.32);
+    filter: drop-shadow(0 10px 18px var(--tree-shadow));
+    will-change: transform, opacity, filter;
+    transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease;
+    animation: tree-sway var(--sway-duration, 8s) ease-in-out infinite alternate;
 }
 
 .tree:hover {
-    opacity: 0.65;
-    transform: scale(1.03);
-    filter: drop-shadow(4px 8px 15px rgba(0,0,0,0.4));
+    opacity: calc(var(--tree-opacity, 0.32) + 0.18);
+    filter: drop-shadow(0 16px 30px var(--tree-shadow-strong));
+    transform: translateY(-2px) scale(1.02);
 }
 
-/* БЕРЁЗЫ (Реалистичный ствол с градиентом, рваными отметинами и свисающими ветвями) */
+/* ===================== BIRCHES ===================== */
+/* Сделал крону более выраженной и опустил ствол, чтобы верхушка точно была видна */
+
 .birch {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 800'%3E%3Cdefs%3E%3ClinearGradient id='trunk' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23d3d6d2'/%3E%3Cstop offset='30%25' stop-color='%23f4f6f4'/%3E%3Cstop offset='70%25' stop-color='%23e8ebe8'/%3E%3Cstop offset='100%25' stop-color='%23b5b8b5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M80,800 Q88,400 90,0 L110,0 Q112,400 120,800 Z' fill='url(%23trunk)'/%3E%3Cpath d='M82,50 L105,53 L100,60 L83,57 Z M118,120 L90,123 L95,115 L119,112 Z M84,180 L110,185 L105,190 L85,188 Z M117,250 L85,255 L90,245 L118,240 Z M86,320 L105,323 L100,330 L87,326 Z M116,400 L85,405 L92,395 L118,390 Z M88,480 L112,485 L108,495 L90,490 Z M118,560 L95,565 L100,555 L119,550 Z M90,640 L115,645 L110,655 L92,650 Z' fill='%231a1a1a' opacity='0.85'/%3E%3Cpath d='M92,100 Q40,150 30,250 M108,180 Q160,220 170,320 M93,280 Q50,320 40,420 M111,380 Q150,420 160,500' stroke='%233a3532' stroke-width='3' fill='none'/%3E%3Cg fill='%23688c4b' opacity='0.85'%3E%3Ccircle cx='30' cy='250' r='15'/%3E%3Ccircle cx='40' cy='240' r='12'/%3E%3Ccircle cx='25' cy='265' r='10'/%3E%3Ccircle cx='170' cy='320' r='18'/%3E%3Ccircle cx='160' cy='310' r='14'/%3E%3Ccircle cx='175' cy='335' r='12'/%3E%3Ccircle cx='40' cy='420' r='16'/%3E%3Ccircle cx='50' cy='410' r='12'/%3E%3Ccircle cx='35' cy='435' r='14'/%3E%3Ccircle cx='160' cy='500' r='15'/%3E%3Ccircle cx='150' cy='490' r='12'/%3E%3Ccircle cx='165' cy='515' r='10'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 920'%3E%3Cdefs%3E%3ClinearGradient id='b' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0%25' stop-color='%23cfd4cf'/%3E%3Cstop offset='20%25' stop-color='%23f5f7f4'/%3E%3Cstop offset='55%25' stop-color='%23e9ece8'/%3E%3Cstop offset='100%25' stop-color='%23adb2ad'/%3E%3C/linearGradient%3E%3ClinearGradient id='l' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23211d1a' stop-opacity='.15'/%3E%3Cstop offset='100%25' stop-color='%23211d1a' stop-opacity='.55'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M104 920 C106 700 111 480 114 70 L126 70 C129 480 134 700 136 920 Z' fill='url(%23b)'/%3E%3Cpath d='M106 110 L134 114 L131 124 L108 120 Z M107 200 L136 205 L132 216 L109 212 Z M106 295 L137 300 L133 311 L108 307 Z M106 390 L136 395 L132 406 L108 402 Z M106 490 L137 495 L133 506 L108 502 Z M106 595 L136 600 L132 611 L108 607 Z M106 700 L135 705 L131 716 L108 712 Z M106 805 L134 810 L130 821 L108 817 Z' fill='%23171616' opacity='.88'/%3E%3Cpath d='M113 150 C77 196 58 255 42 338 M131 220 C167 260 186 326 194 414 M112 330 C78 380 64 442 55 534 M130 435 C165 492 177 557 185 646 M114 560 C83 608 71 676 66 762' stroke='%23383331' stroke-width='4' fill='none' stroke-linecap='round' opacity='.85'/%3E%3Cpath d='M115 148 C94 132 74 114 58 96 M130 220 C149 201 166 182 181 166 M112 330 C93 310 77 292 63 275 M130 435 C151 415 169 395 183 380 M114 560 C96 544 81 528 69 514' stroke='%23494643' stroke-width='2.5' fill='none' stroke-linecap='round' opacity='.6'/%3E%3Cg fill='%23698b4b' opacity='.9'%3E%3Ccircle cx='40' cy='332' r='20'/%3E%3Ccircle cx='54' cy='318' r='16'/%3E%3Ccircle cx='28' cy='345' r='14'/%3E%3Ccircle cx='194' cy='414' r='22'/%3E%3Ccircle cx='182' cy='400' r='17'/%3E%3Ccircle cx='206' cy='428' r='15'/%3E%3Ccircle cx='55' cy='534' r='18'/%3E%3Ccircle cx='69' cy='522' r='14'/%3E%3Ccircle cx='45' cy='548' r='13'/%3E%3Ccircle cx='185' cy='646' r='17'/%3E%3Ccircle cx='172' cy='634' r='13'/%3E%3Ccircle cx='196' cy='660' r='11'/%3E%3C/g%3E%3Cpath d='M104 70 L114 70 M126 70 L136 70' stroke='%23413d39' stroke-width='3' opacity='.55'/%3E%3Crect x='98' y='60' width='48' height='860' fill='url(%23l)' opacity='.10'/%3E%3C/svg%3E");
+    background-position: bottom center;
 }
 
 .left-birch-1 {
-    left: -20px;
-    width: 180px;
-    bottom: -10px;
+    left: -24px;
+    width: 210px;
+    height: 94vh;
+    bottom: -2px;
+    --tree-opacity: 0.34;
+    --sway-duration: 9.2s;
+    transform: scale(1.02);
 }
 
 .left-birch-2 {
-    left: 100px;
+    left: 96px;
     width: 150px;
-    bottom: -40px;
-    opacity: 0.25;
+    height: 80vh;
+    bottom: 10px;
+    --tree-opacity: 0.24;
+    --sway-duration: 10.5s;
+    transform: scale(0.95);
 }
 
 .right-birch-1 {
     right: -20px;
-    width: 190px;
-    bottom: 0px;
+    width: 220px;
+    height: 96vh;
+    bottom: -3px;
+    --tree-opacity: 0.33;
+    --sway-duration: 8.8s;
+    transform: scale(1.03);
 }
 
 .right-birch-2 {
-    right: 80px;
-    width: 140px;
-    bottom: -30px;
-    opacity: 0.25;
+    right: 84px;
+    width: 150px;
+    height: 81vh;
+    bottom: 8px;
+    --tree-opacity: 0.24;
+    --sway-duration: 10.2s;
+    transform: scale(0.96);
 }
 
-/* ДУБЫ (Массивные, с текстурой коры, толстыми ветками и объёмной кроной) */
+/* ===================== OAKS ===================== */
+/* У дубов крона сделана выше и объёмнее, чтобы она читалась на фоне */
+
 .oak {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 800'%3E%3Cpath d='M110,800 C120,600 130,400 135,200 L165,200 C170,400 180,600 190,800 Z' fill='%232b1d12'/%3E%3Cpath d='M120,800 Q130,500 140,200 M140,800 Q145,500 150,200 M160,800 Q155,500 155,200 M180,800 Q170,500 160,200' stroke='%231a1009' stroke-width='4' fill='none' opacity='0.7'/%3E%3Cpath d='M140,250 C100,200 60,150 40,100 M160,280 C200,220 250,180 270,120 M145,180 C120,100 100,50 90,0 M155,180 C180,100 200,50 210,0' stroke='%232b1d12' stroke-width='14' fill='none' stroke-linecap='round'/%3E%3Cpath d='M70,140 C50,100 30,80 10,60 M220,160 C250,120 280,100 290,70' stroke='%232b1d12' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3Cg opacity='0.95'%3E%3Ccircle cx='90' cy='50' r='70' fill='%232e401c'/%3E%3Ccircle cx='210' cy='50' r='75' fill='%23223313'/%3E%3Ccircle cx='150' cy='20' r='80' fill='%23364f1f'/%3E%3Ccircle cx='40' cy='100' r='55' fill='%232e401c'/%3E%3Ccircle cx='260' cy='110' r='60' fill='%23223313'/%3E%3Ccircle cx='150' cy='120' r='90' fill='%23364f1f'/%3E%3Ccircle cx='90' cy='150' r='60' fill='%231f2e12'/%3E%3Ccircle cx='210' cy='160' r='65' fill='%231f2e12'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 920'%3E%3Cdefs%3E%3CradialGradient id='c' cx='50%25' cy='35%25' r='65%25'%3E%3Cstop offset='0%25' stop-color='%23405c27'/%3E%3Cstop offset='55%25' stop-color='%232d4218'/%3E%3Cstop offset='100%25' stop-color='%231d2a11'/%3E%3C/radialGradient%3E%3ClinearGradient id='t' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0%25' stop-color='%23301f13'/%3E%3Cstop offset='50%25' stop-color='%23402b18'/%3E%3Cstop offset='100%25' stop-color='%2321150d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M148 920 C153 675 157 500 160 270 L180 270 C183 500 187 675 192 920 Z' fill='url(%23t)'/%3E%3Cpath d='M155 920 Q160 680 167 270 M172 920 Q175 680 175 270 M188 920 Q184 680 180 270' stroke='%23150e09' stroke-width='4' fill='none' opacity='.55'/%3E%3Cpath d='M172 270 C136 242 100 208 70 160 M183 290 C220 262 264 228 300 178 M166 205 C145 158 126 108 106 58 M185 200 C206 158 226 104 248 54' stroke='%23342116' stroke-width='14' stroke-linecap='round' fill='none'/%3E%3Cpath d='M92 170 C64 148 42 130 22 114 M254 172 C277 152 299 138 318 124' stroke='%23342116' stroke-width='8' stroke-linecap='round' fill='none'/%3E%3Cg fill='url(%23c)' opacity='.98'%3E%3Ccircle cx='92' cy='150' r='72'/%3E%3Ccircle cx='148' cy='92' r='92'/%3E%3Ccircle cx='224' cy='132' r='84'/%3E%3Ccircle cx='66' cy='228' r='60'/%3E%3Ccircle cx='134' cy='220' r='88'/%3E%3Ccircle cx='206' cy='218' r='90'/%3E%3Ccircle cx='272' cy='232' r='60'/%3E%3Ccircle cx='168' cy='56' r='76'/%3E%3Ccircle cx='110' cy='112' r='64'/%3E%3Ccircle cx='236' cy='102' r='66'/%3E%3C/g%3E%3Cg fill='%233f5b25' opacity='.55'%3E%3Ccircle cx='118' cy='104' r='18'/%3E%3Ccircle cx='180' cy='80' r='20'/%3E%3Ccircle cx='232' cy='146' r='18'/%3E%3Ccircle cx='94' cy='176' r='16'/%3E%3Ccircle cx='150' cy='162' r='20'/%3E%3Ccircle cx='208' cy='194' r='15'/%3E%3C/g%3E%3C/svg%3E");
+    background-position: bottom center;
 }
 
 .left-oak {
-    left: -70px;
-    width: 260px;
-    bottom: -20px;
-    opacity: 0.3;
+    left: -82px;
+    width: 290px;
+    height: 98vh;
+    bottom: -5px;
+    --tree-opacity: 0.28;
+    --sway-duration: 11s;
+    transform: scale(1.04);
 }
 
 .right-oak {
-    right: -60px;
-    width: 280px;
-    bottom: -15px;
-    opacity: 0.3;
+    right: -72px;
+    width: 305px;
+    height: 100vh;
+    bottom: -6px;
+    --tree-opacity: 0.28;
+    --sway-duration: 10.6s;
+    transform: scale(1.05);
 }
 
-/* ВЕТКИ (Свисающие лианы, плотный верхний полог леса) */
+/* ===================== TOP CANOPY / BRANCHES ===================== */
+/* Канопи сделал чуть более заметным, чтобы верхняя часть леса читалась лучше */
+
 .branches {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 40vh; /* Уменьшил высоту, чтобы не перекрывало всё, но сделал насыщеннее */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 300' preserveAspectRatio='xMidYMin slice'%3E%3Cpath d='M0,0 L1000,0 L1000,80 Q900,120 800,70 Q700,140 600,60 Q500,160 400,80 Q300,130 200,50 Q100,110 0,60 Z' fill='%2316240d' opacity='0.8'/%3E%3Cpath d='M150,0 Q160,100 140,200 M350,0 Q340,150 360,250 M650,0 Q670,100 640,180 M850,0 Q840,150 860,220' stroke='%233a4a2b' stroke-width='3' fill='none'/%3E%3Cg fill='%234a6735' opacity='0.9'%3E%3Ccircle cx='145' cy='50' r='6'/%3E%3Ccircle cx='135' cy='100' r='8'/%3E%3Ccircle cx='145' cy='150' r='5'/%3E%3Ccircle cx='345' cy='80' r='7'/%3E%3Ccircle cx='355' cy='160' r='9'/%3E%3Ccircle cx='350' cy='220' r='6'/%3E%3Ccircle cx='645' cy='60' r='8'/%3E%3Ccircle cx='655' cy='120' r='6'/%3E%3Ccircle cx='645' cy='160' r='5'/%3E%3Ccircle cx='855' cy='70' r='7'/%3E%3Ccircle cx='845' cy='140' r='8'/%3E%3Ccircle cx='855' cy='190' r='6'/%3E%3C/g%3E%3Cpath d='M-50,50 Q200,150 450,50 M550,20 Q750,150 1050,40' stroke='%232a2118' stroke-width='8' fill='none' stroke-linecap='round' opacity='0.8'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: top center;
-    opacity: 0.6;
+    height: 46vh;
     pointer-events: none;
     z-index: 10;
+    opacity: 0.78;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 460' preserveAspectRatio='xMidYMin slice'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%235a7a42' stop-opacity='.95'/%3E%3Cstop offset='60%25' stop-color='%23304a21' stop-opacity='.98'/%3E%3Cstop offset='100%25' stop-color='%23151f10' stop-opacity='1'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M0 0 H1400 V86 C1280 112 1185 38 1080 86 C970 128 880 40 760 90 C660 132 560 48 450 88 C340 126 260 32 150 82 C90 104 40 82 0 96 Z' fill='url(%23g)'/%3E%3Cpath d='M120 0 C120 66 102 118 86 182 M310 0 C314 64 325 116 336 182 M540 0 C536 84 524 152 515 226 M820 0 C828 74 844 134 860 204 M1060 0 C1050 78 1038 140 1026 222 M1280 0 C1270 66 1252 128 1235 194' stroke='%233c5030' stroke-width='4' fill='none' stroke-linecap='round' opacity='.7'/%3E%3Cg fill='%234f6b35' opacity='.95'%3E%3Ccircle cx='85' cy='104' r='18'/%3E%3Ccircle cx='118' cy='90' r='20'/%3E%3Ccircle cx='150' cy='112' r='16'/%3E%3Ccircle cx='320' cy='122' r='20'/%3E%3Ccircle cx='350' cy='94' r='16'/%3E%3Ccircle cx='388' cy='130' r='18'/%3E%3Ccircle cx='520' cy='142' r='22'/%3E%3Ccircle cx='560' cy='102' r='18'/%3E%3Ccircle cx='600' cy='132' r='16'/%3E%3Ccircle cx='820' cy='114' r='18'/%3E%3Ccircle cx='860' cy='88' r='20'/%3E%3Ccircle cx='910' cy='124' r='16'/%3E%3Ccircle cx='1030' cy='132' r='18'/%3E%3Ccircle cx='1090' cy='102' r='20'/%3E%3Ccircle cx='1140' cy='136' r='16'/%3E%3Ccircle cx='1235' cy='114' r='18'/%3E%3Ccircle cx='1280' cy='90' r='20'/%3E%3Ccircle cx='1330' cy='124' r='16'/%3E%3C/g%3E%3Cpath d='M-20 110 C200 158 350 66 520 112 C700 162 820 76 1000 118 C1160 154 1280 104 1420 136' stroke='%23221a13' stroke-width='10' fill='none' stroke-linecap='round' opacity='.6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: cover;
+    filter: blur(0.1px);
+}
+
+/* ===================== OPTIONAL EXTRA LAYERS ===================== */
+
+.forest-fog {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 38vh;
+    z-index: 6;
+    background:
+        linear-gradient(to top, rgba(9, 14, 10, 0.44) 0%, rgba(9, 14, 10, 0.18) 38%, transparent 100%),
+        radial-gradient(ellipse at center, var(--forest-mist-strong) 0%, transparent 68%);
+    filter: blur(10px);
+    opacity: 0.95;
+    animation: fog-float 14s ease-in-out infinite alternate;
+}
+
+.forest-foreground {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 22vh;
+    z-index: 12;
+    background:
+        radial-gradient(circle at 5% 100%, rgba(16, 24, 14, 0.95) 0 12%, transparent 13%),
+        radial-gradient(circle at 12% 100%, rgba(16, 24, 14, 0.95) 0 10%, transparent 11%),
+        radial-gradient(circle at 22% 100%, rgba(16, 24, 14, 0.95) 0 14%, transparent 15%),
+        radial-gradient(circle at 35% 100%, rgba(16, 24, 14, 0.95) 0 11%, transparent 12%),
+        radial-gradient(circle at 48% 100%, rgba(16, 24, 14, 0.95) 0 13%, transparent 14%),
+        radial-gradient(circle at 60% 100%, rgba(16, 24, 14, 0.95) 0 10%, transparent 11%),
+        radial-gradient(circle at 72% 100%, rgba(16, 24, 14, 0.95) 0 14%, transparent 15%),
+        radial-gradient(circle at 85% 100%, rgba(16, 24, 14, 0.95) 0 11%, transparent 12%),
+        radial-gradient(circle at 96% 100%, rgba(16, 24, 14, 0.95) 0 12%, transparent 13%);
+    filter: blur(2px);
+    opacity: 0.95;
+}
+
+/* ===================== ANIMATIONS ===================== */
+
+@keyframes tree-sway {
+    0%   { transform: translate3d(0, 0, 0) rotate(-0.35deg) scale(1); }
+    50%  { transform: translate3d(0, -1px, 0) rotate(0.35deg) scale(1); }
+    100% { transform: translate3d(0, 0, 0) rotate(-0.15deg) scale(1); }
+}
+
+@keyframes fog-float {
+    0%   { transform: translateX(-1.5%) translateY(0); }
+    50%  { transform: translateX(1%) translateY(-1%); }
+    100% { transform: translateX(2%) translateY(0); }
+}
+
+@keyframes mist-drift {
+    0%   { transform: translateX(-1%) translateY(0) scale(1); }
+    100% { transform: translateX(1.5%) translateY(-1%) scale(1.02); }
+}
+
+/* ===================== ACCESSIBILITY / PERFORMANCE ===================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .tree,
+    .forest-bg::before,
+    .forest-fog {
+        animation: none !important;
+    }
+
+    .tree {
+        transition: none;
+    }
+}
+
+/* ===================== CONTENT ABOVE BACKGROUND ===================== */
+
+.forest-content {
+    position: relative;
+    z-index: 50;
 }
 
 /* ===== RESPONSIVE ===== */
