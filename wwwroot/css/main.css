@@ -1233,32 +1233,6 @@ body {
     display: block;
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .books-grid {
-        grid-template-columns: 1fr;
-    }
-    .expanded-content {
-        grid-template-columns: 1fr;
-    }
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    .admin-sidebar {
-        width: 100%;
-        position: relative;
-        height: auto;
-    }
-    .admin-main {
-        margin-left: 0;
-    }
-    .admin-wrapper {
-        flex-direction: column;
-    }
-    .birch-decoration {
-        display: none;
-    }
-
     /* ===== FOREST BACKGROUND ===== */
 .forest-bg {
     position: fixed;
@@ -1344,4 +1318,31 @@ body {
     background-size: cover;
     opacity: 0.3;
     pointer-events: none;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .books-grid {
+        grid-template-columns: 1fr;
+    }
+    .expanded-content {
+        grid-template-columns: 1fr;
+    }
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .admin-sidebar {
+        width: 100%;
+        position: relative;
+        height: auto;
+    }
+    .admin-main {
+        margin-left: 0;
+    }
+    .admin-wrapper {
+        flex-direction: column;
+    }
+    .birch-decoration {
+        display: none;
+    }
 }
