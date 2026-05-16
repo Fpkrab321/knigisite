@@ -35,9 +35,7 @@ html {
 
 body {
     font-family: 'Raleway', sans-serif;
-    background:
-        radial-gradient(circle at 50% 0%, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.18) 18%, transparent 40%),
-        linear-gradient(180deg, #dfead0 0%, #f3f0e7 28%, #f8f4ed 55%, #f8f4ed 100%);
+    background: #f8f4ed;
     color: var(--text-mid);
     min-height: 100vh;
     overflow-x: hidden;
@@ -46,7 +44,7 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== FOREST BACKGROUND ===== */
+/* ===== MAXIMALLY DETAILED FOREST BACKGROUND ===== */
 .forest-scene {
     position: fixed;
     inset: 0;
@@ -56,105 +54,118 @@ body {
     isolation: isolate;
     transform: translateZ(0);
     contain: layout paint style;
+    
+    /* Base Sky and Atmospheric Particles */
     background:
-        radial-gradient(circle at 50% 10%, rgba(255, 250, 240, 0.92) 0%, rgba(255, 250, 240, 0.34) 14%, transparent 34%),
-        radial-gradient(circle at 12% 18%, rgba(255,255,255,0.18) 0 4%, transparent 18%),
-        radial-gradient(circle at 88% 16%, rgba(255,255,255,0.16) 0 4%, transparent 16%),
-        radial-gradient(circle at 50% 45%, rgba(170, 196, 150, 0.10) 0%, transparent 42%),
-        linear-gradient(180deg, #d5e6c2 0%, #e5efdb 16%, #f2f4e7 34%, #f8f4ed 58%, #f8f4ed 100%);
+        /* Sun Glow */
+        radial-gradient(circle at 75% 15%, rgba(255, 250, 235, 0.9) 0%, rgba(255, 250, 235, 0.25) 20%, transparent 55%),
+        /* Glowing Dust Motes */
+        radial-gradient(circle at 15% 30%, rgba(255, 255, 255, 0.7) 0, transparent 2px),
+        radial-gradient(circle at 82% 38%, rgba(255, 255, 255, 0.6) 0, transparent 3px),
+        radial-gradient(circle at 45% 65%, rgba(255, 255, 255, 0.8) 0, transparent 2.5px),
+        radial-gradient(circle at 25% 75%, rgba(255, 255, 255, 0.5) 0, transparent 2px),
+        radial-gradient(circle at 60% 80%, rgba(255, 255, 255, 0.6) 0, transparent 2px),
+        /* Atmospheric Sky Gradients */
+        linear-gradient(180deg, #d2e0c1 0%, #e2ecd4 25%, #f1f4e6 55%, #f8f4ed 100%);
 }
 
-/* Sky, sun glow, haze and atmospheric depth */
+/* Background Mid-Layer: God Rays, Distant Out-of-Focus Trees and Mist */
 .forest-scene::before {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-        radial-gradient(circle at 50% 12%, rgba(255,255,245,0.96) 0 4.5%, rgba(255,255,245,0.40) 9%, transparent 24%),
-        radial-gradient(circle at 16% 22%, rgba(255,255,255,0.30) 0 5%, transparent 22%),
-        radial-gradient(circle at 84% 20%, rgba(255,255,255,0.26) 0 5%, transparent 22%),
-        radial-gradient(circle at 50% 34%, rgba(200, 224, 180, 0.16) 0%, transparent 34%),
-        radial-gradient(circle at 50% 55%, rgba(255,255,255,0.10) 0%, transparent 38%),
-        linear-gradient(
-            180deg,
-            rgba(255,255,255,0.26) 0%,
-            rgba(255,255,255,0.08) 24%,
-            rgba(248,244,237,0) 100%
-        );
-    opacity: 1;
-    filter: blur(0.1px);
+    filter: blur(1.5px);
+    background-image:
+        /* Sunbeams (God Rays) */
+        linear-gradient(110deg, transparent 25%, rgba(255,253,240,0.18) 35%, transparent 50%),
+        linear-gradient(115deg, transparent 40%, rgba(255,253,240,0.14) 50%, transparent 65%),
+        linear-gradient(105deg, transparent 60%, rgba(255,253,240,0.1) 70%, transparent 80%),
+        
+        /* TREE 3: Background Left (Out of focus) */
+        repeating-linear-gradient(1deg, transparent 0, transparent 35px, rgba(50,50,50,0.5) 36px, transparent 38px),
+        linear-gradient(90deg, #555 0%, #c4bcae 30%, #e2dcd0 60%, #8c8577 85%, #333 100%),
+        
+        /* TREE 4: Background Right (Out of focus) */
+        repeating-linear-gradient(-0.5deg, transparent 0, transparent 45px, rgba(45,45,45,0.5) 46px, transparent 48px),
+        linear-gradient(90deg, #444 0%, #9e9788 15%, #d1c8b6 50%, #b5ad9e 85%, #444 100%),
+        
+        /* Blurry Silhouette Trees in the far distance */
+        linear-gradient(90deg, rgba(80,95,70,0.3) 0%, rgba(110,125,100,0.5) 50%, rgba(60,75,50,0.3) 100%),
+        linear-gradient(90deg, rgba(70,85,60,0.2) 0%, rgba(90,105,80,0.4) 50%, rgba(50,65,40,0.2) 100%),
+        
+        /* Distant Ground Mist */
+        linear-gradient(180deg, transparent 55%, rgba(130, 150, 110, 0.25) 75%, rgba(60, 82, 44, 0.45) 100%);
+
+    background-size:
+        100% 100%, 100% 100%, 100% 100%, /* Rays */
+        2.5vw 100%, 2.5vw 100%, /* T3 */
+        3vw 100%, 3vw 100%, /* T4 */
+        1.5vw 100%, 2vw 100%, /* Silhouettes */
+        100% 100%; /* Mist */
+        
+    background-position:
+        0 0, 0 0, 0 0,
+        32% 0, 32% 0,
+        66% 0, 66% 0,
+        45% 0, 56% 0,
+        0 0;
+        
+    background-repeat: no-repeat;
+    opacity: 0.95;
 }
 
-/* Main forest depth: mist, distant tree line, bark and ground */
+/* Foreground Layer: Crisp Detailed Birches, Forest Floor, Shadow Depth */
 .forest-scene::after {
     content: '';
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 42vh;
-    background:
-        /* distant mist and depth */
-        linear-gradient(
-            180deg,
-            rgba(255,255,255,0) 0%,
-            rgba(110, 132, 93, 0.04) 15%,
-            rgba(76, 104, 60, 0.07) 28%,
-            rgba(51, 75, 39, 0.14) 55%,
-            rgba(31, 45, 24, 0.26) 100%
-        ),
-        radial-gradient(
-            ellipse at 50% 100%,
-            rgba(57, 92, 50, 0.22) 0%,
-            rgba(57, 92, 50, 0.09) 34%,
-            transparent 72%
-        ),
+    inset: 0;
+    background-image:
+        /* Foreground Atmospheric Mist */
+        linear-gradient(180deg, transparent 65%, rgba(248, 244, 237, 0.3) 82%, rgba(34, 54, 29, 0.5) 100%),
 
-        /* distant canopy silhouettes */
-        radial-gradient(circle at 8% 58%, rgba(52, 79, 42, 0.36) 0 5%, transparent 5.5%),
-        radial-gradient(circle at 14% 53%, rgba(60, 91, 50, 0.34) 0 6%, transparent 6.5%),
-        radial-gradient(circle at 21% 56%, rgba(57, 86, 47, 0.31) 0 5.5%, transparent 6.2%),
-        radial-gradient(circle at 31% 52%, rgba(48, 76, 39, 0.30) 0 6.4%, transparent 7.0%),
-        radial-gradient(circle at 42% 57%, rgba(56, 84, 47, 0.28) 0 5.8%, transparent 6.5%),
-        radial-gradient(circle at 52% 53%, rgba(47, 72, 37, 0.30) 0 6.2%, transparent 6.9%),
-        radial-gradient(circle at 63% 55%, rgba(57, 88, 47, 0.31) 0 5.7%, transparent 6.4%),
-        radial-gradient(circle at 74% 52%, rgba(48, 74, 39, 0.30) 0 6.4%, transparent 7.2%),
-        radial-gradient(circle at 84% 56%, rgba(56, 84, 47, 0.28) 0 5.8%, transparent 6.5%),
-        radial-gradient(circle at 92% 53%, rgba(47, 72, 37, 0.30) 0 6.1%, transparent 6.9%),
+        /* TREE 1: Foreground Left (Highest Detail) */
+        radial-gradient(ellipse at 50% 30%, #111 0%, #222 5px, transparent 6px), /* Knot */
+        radial-gradient(ellipse at 30% 75%, #111 0%, #111 4px, transparent 5px), /* Knot */
+        repeating-linear-gradient(2deg, transparent 0, transparent 50px, rgba(20,20,20,0.85) 52px, rgba(10,10,10,0.95) 55px, transparent 58px), /* Jagged Bark Slashes */
+        repeating-linear-gradient(-3deg, transparent 0, transparent 85px, rgba(30,30,30,0.8) 87px, rgba(15,15,15,0.9) 92px, transparent 94px), /* Jagged Bark Slashes */
+        linear-gradient(90deg, #050505 0%, #6b6459 8%, #f0eae1 25%, #ffffff 50%, #d1c8b6 85%, #0a0a0a 100%), /* 3D Cylindrical Shading */
 
-        /* distant birch trunks */
-        radial-gradient(ellipse 14px 360px at 3% 100%, rgba(249, 245, 236, 0.92) 0 56%, rgba(25,25,25,0.60) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 12px 340px at 8% 100%, rgba(247, 242, 233, 0.90) 0 56%, rgba(25,25,25,0.54) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 15px 380px at 15% 100%, rgba(247, 243, 235, 0.92) 0 56%, rgba(25,25,25,0.60) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 11px 330px at 22% 100%, rgba(244, 239, 230, 0.89) 0 56%, rgba(25,25,25,0.50) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 16px 390px at 31% 100%, rgba(247, 243, 235, 0.92) 0 56%, rgba(25,25,25,0.58) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 12px 335px at 40% 100%, rgba(246, 241, 232, 0.90) 0 56%, rgba(25,25,25,0.50) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 16px 386px at 49% 100%, rgba(248, 244, 236, 0.92) 0 56%, rgba(25,25,25,0.58) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 11px 325px at 58% 100%, rgba(246, 241, 232, 0.88) 0 56%, rgba(25,25,25,0.50) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 16px 388px at 67% 100%, rgba(247, 243, 235, 0.92) 0 56%, rgba(25,25,25,0.58) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 12px 336px at 76% 100%, rgba(244, 239, 229, 0.89) 0 56%, rgba(25,25,25,0.50) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 15px 382px at 85% 100%, rgba(247, 243, 235, 0.92) 0 56%, rgba(25,25,25,0.58) 57% 60%, transparent 61%),
-        radial-gradient(ellipse 12px 340px at 94% 100%, rgba(246, 241, 232, 0.90) 0 56%, rgba(25,25,25,0.52) 57% 60%, transparent 61%),
+        /* TREE 6: Foreground Right (Highest Detail) */
+        radial-gradient(ellipse at 40% 45%, #111 0%, #111 6px, transparent 8px), /* Knot */
+        repeating-linear-gradient(-2deg, transparent 0, transparent 65px, rgba(15,15,15,0.9) 67px, rgba(5,5,5,0.95) 71px, transparent 73px),
+        repeating-linear-gradient(4deg, transparent 0, transparent 110px, rgba(25,25,25,0.85) 112px, rgba(10,10,10,0.9) 116px, transparent 118px),
+        linear-gradient(90deg, #0a0a0a 0%, #b8b0a2 15%, #ffffff 55%, #e6dfd3 85%, #050505 100%), /* Lighting hits from center-right */
 
-        /* bark stripes and spots */
-        repeating-linear-gradient(
-            180deg,
-            transparent 0 20px,
-            rgba(20, 20, 20, 0.20) 20px 22px,
-            transparent 22px 45px
-        ),
-        repeating-linear-gradient(
-            168deg,
-            transparent 0 50px,
-            rgba(36, 36, 36, 0.08) 50px 53px,
-            transparent 53px 92px
-        ),
+        /* TREE 2: Mid Left */
+        repeating-linear-gradient(1.5deg, transparent 0, transparent 40px, rgba(25,25,25,0.8) 42px, transparent 45px),
+        repeating-linear-gradient(-1deg, transparent 0, transparent 70px, rgba(15,15,15,0.85) 72px, transparent 74px),
+        linear-gradient(90deg, #111 0%, #e6dfd1 25%, #fff 55%, #b5ad9e 85%, #151515 100%),
 
-        /* forest floor */
-        linear-gradient(180deg, rgba(248,244,237,0) 0%, rgba(92, 111, 65, 0.20) 34%, rgba(60, 82, 44, 0.34) 100%);
-    filter: blur(0.45px);
-    opacity: 0.98;
-    will-change: transform;
+        /* TREE 5: Mid Right */
+        repeating-linear-gradient(-1.5deg, transparent 0, transparent 55px, rgba(25,25,25,0.8) 57px, transparent 59px),
+        repeating-linear-gradient(2.5deg, transparent 0, transparent 80px, rgba(20,20,20,0.85) 82px, transparent 84px),
+        linear-gradient(90deg, #151515 0%, #a8a193 15%, #fff 60%, #e2dcd0 85%, #111 100%),
+
+        /* Detailed Forest Floor Front */
+        radial-gradient(ellipse at 50% 105%, rgba(25, 42, 20, 1) 0%, rgba(45, 74, 37, 0.95) 30%, transparent 70%);
+
+    background-size:
+        100% 100%, /* Mist */
+        8vw 100%, 8vw 100%, 8vw 100%, 8vw 100%, 8vw 100%, /* Tree 1 Elements */
+        9.5vw 100%, 9.5vw 100%, 9.5vw 100%, 9.5vw 100%, /* Tree 6 Elements */
+        4.5vw 100%, 4.5vw 100%, 4.5vw 100%, /* Tree 2 Elements */
+        5.5vw 100%, 5.5vw 100%, 5.5vw 100%, /* Tree 5 Elements */
+        100% 20vh; /* Floor */
+
+    background-position:
+        0 0, /* Mist */
+        4% 0, 4% 0, 4% 0, 4% 0, 4% 0, /* Tree 1 Position */
+        94% 0, 94% 0, 94% 0, 94% 0, /* Tree 6 Position */
+        18% 0, 18% 0, 18% 0, /* Tree 2 Position */
+        82% 0, 82% 0, 82% 0, /* Tree 5 Position */
+        bottom center; /* Floor Position */
+        
+    background-repeat: no-repeat;
     transform: translateZ(0);
 }
 
@@ -1354,316 +1365,5 @@ body {
 }
 .book-text-section textarea:focus {
     border-color: var(--forest-green);
-}
-.text-count {
-    font-size: 0.75rem;
-    color: var(--text-light);
-    margin-top: 5px;
-    text-align: right;
-}
-
-/* Image section */
-.image-section {
-    border-top: 1px solid var(--cream-dark);
-    padding-top: 24px;
-    margin-bottom: 24px;
-}
-.image-section h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.15rem;
-    color: var(--text-dark);
-    margin-bottom: 14px;
-}
-.image-upload-area {
-    border: 2px dashed var(--birch-bark);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    overflow: hidden;
-}
-.image-upload-area:hover {
-    border-color: var(--gold);
-    background: var(--cream);
-}
-.upload-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 32px 20px;
-    gap: 8px;
-    text-align: center;
-    color: var(--text-light);
-    font-size: 0.88rem;
-}
-.upload-hint {
-    font-size: 0.75rem;
-    color: var(--birch-bark);
-}
-.image-editor {
-    padding: 16px;
-    background: var(--cream);
-    border-top: 1px solid var(--birch-bark);
-}
-.editor-canvas-wrap {
-    position: relative;
-    display: inline-block;
-    max-width: 100%;
-    margin-bottom: 12px;
-}
-#editorCanvas {
-    max-width: 100%;
-    display: block;
-    border-radius: 6px;
-    border: 1px solid var(--birch-bark);
-}
-.crop-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-}
-.crop-box {
-    position: absolute;
-    border: 2px solid var(--gold);
-    box-shadow: 0 0 0 9999px rgba(0,0,0,0.4);
-    cursor: move;
-}
-.crop-handle {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: var(--gold);
-    border: 1px solid #fff;
-    border-radius: 2px;
-}
-.crop-handle.tl {
-    top: -6px;
-    left: -6px;
-    cursor: nw-resize;
-}
-.crop-handle.tr {
-    top: -6px;
-    right: -6px;
-    cursor: ne-resize;
-}
-.crop-handle.bl {
-    bottom: -6px;
-    left: -6px;
-    cursor: sw-resize;
-}
-.crop-handle.br {
-    bottom: -6px;
-    right: -6px;
-    cursor: se-resize;
-}
-.editor-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-.tool-btn {
-    padding: 6px 13px;
     background: #fff;
-    border: 1.5px solid var(--birch-bark);
-    border-radius: 6px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: 'Raleway', sans-serif;
-    color: var(--text-mid);
-}
-.tool-btn:hover {
-    border-color: var(--gold);
-    color: var(--gold);
-}
-.tool-btn.active {
-    background: var(--forest-green);
-    color: #fff;
-    border-color: var(--forest-green);
-}
-.tool-btn.danger {
-    color: #c0392b;
-    border-color: #e0b0b0;
-}
-.tool-btn.danger:hover {
-    background: #fde8e8;
-    border-color: #c0392b;
-}
-.editor-preview-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.preview-label {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--text-light);
-}
-#previewCanvas {
-    border: 1.5px solid var(--birch-bark);
-    border-radius: 5px;
-    background: var(--cream);
-}
-
-.form-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding-top: 20px;
-    border-top: 1px solid var(--cream-dark);
-}
-.form-status {
-    margin-top: 12px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 8px 14px;
-    border-radius: 6px;
-    display: none;
-}
-.form-status.success {
-    display: block;
-    background: #e8f5e9;
-    color: #2e7d32;
-}
-.form-status.error {
-    display: block;
-    background: #fde8e8;
-    color: #c0392b;
-}
-
-/* Auth gate */
-.auth-gate {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    color: var(--text-light);
-}
-
-/* ===== LOADING STATE ===== */
-.loading-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(248,244,237,0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius);
-    z-index: 10;
-}
-.spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--birch-bark);
-    border-top-color: var(--forest-green);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-}
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .books-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 16px;
-    }
-
-    .reader-content {
-        padding: 24px 20px;
-    }
-
-    .reader-toolbar {
-        padding: 8px 16px;
-    }
-
-    .admin-wrapper {
-        flex-direction: column;
-    }
-
-    .admin-sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        flex-direction: row;
-        flex-wrap: wrap;
-        padding: 12px;
-    }
-
-    .sidebar-nav {
-        display: flex;
-        flex-direction: row;
-        overflow-x: auto;
-    }
-
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .expanded-content {
-        flex-direction: column;
-    }
-
-    .expanded-left {
-        width: 80px;
-    }
-
-    .forest-scene::after {
-        height: 34vh;
-    }
-
-    .forest-svg {
-        width: 150vw;
-    }
-}
-
-@media (max-width: 480px) {
-    .books-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-
-    .reader-modal {
-        max-height: 95vh;
-        border-radius: 12px;
-    }
-
-    .reader-content {
-        padding: 20px 16px;
-        font-size: 0.95rem;
-    }
-
-    .site-wrapper {
-        padding: 0 16px;
-    }
-
-    .header-inner {
-        gap: 12px;
-    }
-
-    .birch-decoration {
-        width: 44px;
-    }
-
-    .forest-scene::after {
-        height: 31vh;
-    }
-}
-
-/* ===== EXTRA POLISH FOR BACKGROUND LAYERING ===== */
-.forest-scene,
-.forest-scene::before,
-.forest-scene::after,
-.forest-svg,
-#leafCanvas {
-    backface-visibility: hidden;
-}
-
-.forest-scene::after {
-    background-blend-mode: normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal, normal;
 }
