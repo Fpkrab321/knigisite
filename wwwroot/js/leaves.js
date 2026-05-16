@@ -1,9 +1,9 @@
 /**
- * Animated falling leaves — enhanced forest atmosphere
+ * Animated falling leaves — optimized high-quality version
+ * - Leaf shapes are pre-rendered into cached sprites
+ * - Main loop only updates motion and draws sprites
  * - High-DPI canvas support
- * - Detailed leaf shapes
- * - Gradients, veins, soft shadow/highlight
- * - Depth/parallax and smoother wind motion
+ * - Detailed gradients, veins, and soft baked shadows
  */
 (function () {
     const canvas = document.getElementById('leafCanvas');
@@ -15,22 +15,6 @@
     let W = 0;
     let H = 0;
     let DPR = Math.max(1, window.devicePixelRatio || 1);
-
-    function resize() {
-        DPR = Math.max(1, window.devicePixelRatio || 1);
-        W = window.innerWidth;
-        H = window.innerHeight;
-
-        canvas.style.width = W + 'px';
-        canvas.style.height = H + 'px';
-        canvas.width = Math.floor(W * DPR);
-        canvas.height = Math.floor(H * DPR);
-
-        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    }
-
-    resize();
-    window.addEventListener('resize', resize, { passive: true });
 
     const LEAF_PALETTE = [
         ['#f1c36a', '#c98a2f'],
@@ -55,14 +39,43 @@
         return arr[(Math.random() * arr.length) | 0];
     }
 
+    function createCanvas(w, h) {
+        if (typeof OffscreenCanvas !== 'undefined') {
+            return new OffscreenCanvas(w, h);
+        }
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        return c;
+    }
+
+    function resize() {
+        DPR = Math.max(1, window.devicePixelRatio || 1);
+        W = window.innerWidth;
+        H = window.innerHeight;
+
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        canvas.width = Math.floor(W * DPR);
+        canvas.height = Math.floor(H * DPR);
+
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+        // Rebuild sprite sizes on DPR change so they stay crisp.
+        for (const leaf of leaves) {
+            buildSprite(leaf);
+        }
+    }
+
     function makeLeaf(resetY = false) {
         const colors = pick(LEAF_PALETTE);
         const depth = rand(0.35, 1.0);
+        const size = rand(8, 18) * (0.7 + depth * 0.75);
 
-        const leaf = {
+        return {
             x: rand(-80, W + 80),
             y: resetY ? rand(-H * 0.2, H) : rand(-120, -20),
-            size: rand(8, 18) * (0.7 + depth * 0.75),
+            size,
             baseSpeed: rand(0.45, 1.35) * (0.55 + depth * 0.9),
             drift: rand(-0.35, 0.35),
             windPhase: rand(0, Math.PI * 2),
@@ -81,181 +94,197 @@
             wobbleSeed: rand(0, Math.PI * 2),
             wobbleSpeed: rand(0.02, 0.05),
             wobbleAmp: rand(0.04, 0.12),
-            blur: Math.max(0, 2.2 - depth * 1.8)
+            sprite: null,
+            spriteW: 0,
+            spriteH: 0
         };
-
-        return leaf;
     }
 
-    for (let i = 0; i < LEAF_COUNT; i++) {
-        leaves.push(makeLeaf(true));
+    function drawVeinLine(g, x1, y1, x2, y2, width, color) {
+        g.beginPath();
+        g.moveTo(x1, y1);
+        g.lineTo(x2, y2);
+        g.strokeStyle = color;
+        g.lineWidth = width;
+        g.lineCap = 'round';
+        g.stroke();
     }
 
-    function drawVeinLine(x1, y1, x2, y2, width, color) {
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.strokeStyle = color;
-        ctx.lineWidth = width;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-    }
-
-    function drawLeafShape(leaf) {
+    function buildSprite(leaf) {
         const s = leaf.size;
-        const grad = ctx.createLinearGradient(-s, -s, s, s);
+        const pad = Math.max(8, Math.ceil(s * 0.55));
+        const cssSize = Math.ceil(s * 2.8 + pad * 2);
+        const pxSize = Math.max(16, Math.ceil(cssSize * DPR));
+
+        const sprite = createCanvas(pxSize, pxSize);
+        const g = sprite.getContext('2d', { alpha: true });
+        if (!g) return;
+
+        g.scale(DPR, DPR);
+        g.clearRect(0, 0, cssSize, cssSize);
+        g.translate(cssSize / 2, cssSize / 2);
+        g.rotate(leaf.tilt * 0.08);
+
+        const grad = g.createLinearGradient(-s, -s, s, s);
         grad.addColorStop(0, leaf.colorA);
         grad.addColorStop(1, leaf.colorB);
 
-        const highlight = ctx.createRadialGradient(-s * 0.35, -s * 0.45, 0, 0, 0, s * 1.2);
+        const highlight = g.createRadialGradient(-s * 0.35, -s * 0.45, 0, 0, 0, s * 1.2);
         highlight.addColorStop(0, 'rgba(255,255,255,0.28)');
         highlight.addColorStop(0.4, 'rgba(255,255,255,0.10)');
         highlight.addColorStop(1, 'rgba(255,255,255,0)');
 
-        ctx.save();
-        ctx.translate(leaf.x, leaf.y);
-        ctx.rotate(leaf.rotation);
-        ctx.scale(1, 1 + leaf.tilt * 0.12);
-
-        ctx.globalAlpha = leaf.opacity;
-        ctx.shadowColor = leaf.shadow;
-        ctx.shadowBlur = 8 * leaf.depth;
-        ctx.shadowOffsetY = 2 * leaf.depth;
+        g.save();
+        g.shadowColor = leaf.shadow;
+        g.shadowBlur = Math.max(4, s * 0.35);
+        g.shadowOffsetY = Math.max(1, s * 0.08);
+        g.globalAlpha = leaf.opacity;
 
         if (leaf.type === 0) {
             // Smooth oval leaf
-            ctx.beginPath();
-            ctx.ellipse(0, 0, s * 0.46, s * 1.05, 0, 0, Math.PI * 2);
-            ctx.fillStyle = grad;
-            ctx.fill();
+            g.beginPath();
+            g.ellipse(0, 0, s * 0.46, s * 1.05, 0, 0, Math.PI * 2);
+            g.fillStyle = grad;
+            g.fill();
 
-            ctx.save();
-            ctx.clip();
-            ctx.fillStyle = highlight;
-            ctx.fillRect(-s, -s, s * 2, s * 2);
-            ctx.restore();
+            g.save();
+            g.clip();
+            g.fillStyle = highlight;
+            g.fillRect(-s, -s, s * 2, s * 2);
+            g.restore();
 
-            drawVeinLine(0, -s * 0.85, 0, s * 0.75, 1.05, leaf.veinTint);
+            drawVeinLine(g, 0, -s * 0.85, 0, s * 0.75, 1.05, leaf.veinTint);
 
             for (let i = -2; i <= 2; i++) {
                 const yy = i * s * 0.23;
-                drawVeinLine(0, yy, s * (0.18 + Math.abs(i) * 0.03), yy - s * 0.08, 0.55, 'rgba(255,255,255,0.15)');
-                drawVeinLine(0, yy, -s * (0.18 + Math.abs(i) * 0.03), yy - s * 0.08, 0.55, 'rgba(255,255,255,0.12)');
+                drawVeinLine(g, 0, yy, s * (0.18 + Math.abs(i) * 0.03), yy - s * 0.08, 0.55, 'rgba(255,255,255,0.15)');
+                drawVeinLine(g, 0, yy, -s * (0.18 + Math.abs(i) * 0.03), yy - s * 0.08, 0.55, 'rgba(255,255,255,0.12)');
             }
 
-            drawVeinLine(0, s * 0.88, 0, s * 1.22, 1.0, leaf.colorB);
-
+            drawVeinLine(g, 0, s * 0.88, 0, s * 1.22, 1.0, leaf.colorB);
         } else if (leaf.type === 1) {
             // Maple-like leaf
-            ctx.beginPath();
-            ctx.moveTo(0, -s * 1.08);
-            ctx.lineTo(s * 0.22, -s * 0.62);
-            ctx.lineTo(s * 0.72, -s * 0.92);
-            ctx.lineTo(s * 0.58, -s * 0.18);
-            ctx.lineTo(s * 1.08, 0);
-            ctx.lineTo(s * 0.58, s * 0.22);
-            ctx.lineTo(s * 0.82, s * 0.82);
-            ctx.lineTo(s * 0.18, s * 0.5);
-            ctx.lineTo(0, s * 1.18);
-            ctx.lineTo(-s * 0.18, s * 0.5);
-            ctx.lineTo(-s * 0.82, s * 0.82);
-            ctx.lineTo(-s * 0.58, s * 0.22);
-            ctx.lineTo(-s * 1.08, 0);
-            ctx.lineTo(-s * 0.58, -s * 0.18);
-            ctx.lineTo(-s * 0.72, -s * 0.92);
-            ctx.lineTo(-s * 0.22, -s * 0.62);
-            ctx.closePath();
-            ctx.fillStyle = grad;
-            ctx.fill();
+            g.beginPath();
+            g.moveTo(0, -s * 1.08);
+            g.lineTo(s * 0.22, -s * 0.62);
+            g.lineTo(s * 0.72, -s * 0.92);
+            g.lineTo(s * 0.58, -s * 0.18);
+            g.lineTo(s * 1.08, 0);
+            g.lineTo(s * 0.58, s * 0.22);
+            g.lineTo(s * 0.82, s * 0.82);
+            g.lineTo(s * 0.18, s * 0.5);
+            g.lineTo(0, s * 1.18);
+            g.lineTo(-s * 0.18, s * 0.5);
+            g.lineTo(-s * 0.82, s * 0.82);
+            g.lineTo(-s * 0.58, s * 0.22);
+            g.lineTo(-s * 1.08, 0);
+            g.lineTo(-s * 0.58, -s * 0.18);
+            g.lineTo(-s * 0.72, -s * 0.92);
+            g.lineTo(-s * 0.22, -s * 0.62);
+            g.closePath();
+            g.fillStyle = grad;
+            g.fill();
 
-            ctx.save();
-            ctx.clip();
-            ctx.fillStyle = highlight;
-            ctx.fillRect(-s, -s, s * 2, s * 2);
-            ctx.restore();
+            g.save();
+            g.clip();
+            g.fillStyle = highlight;
+            g.fillRect(-s, -s, s * 2, s * 2);
+            g.restore();
 
-            drawVeinLine(0, -s * 0.85, 0, s * 0.95, 1.1, leaf.veinTint);
-            drawVeinLine(0, -s * 0.15, s * 0.32, -s * 0.42, 0.65, 'rgba(255,255,255,0.16)');
-            drawVeinLine(0, -s * 0.15, -s * 0.32, -s * 0.42, 0.65, 'rgba(255,255,255,0.16)');
-            drawVeinLine(0, s * 0.12, s * 0.45, -s * 0.02, 0.55, 'rgba(255,255,255,0.13)');
-            drawVeinLine(0, s * 0.12, -s * 0.45, -s * 0.02, 0.55, 'rgba(255,255,255,0.13)');
-            drawVeinLine(0, s * 0.42, s * 0.35, s * 0.32, 0.55, 'rgba(255,255,255,0.12)');
-            drawVeinLine(0, s * 0.42, -s * 0.35, s * 0.32, 0.55, 'rgba(255,255,255,0.12)');
+            drawVeinLine(g, 0, -s * 0.85, 0, s * 0.95, 1.1, leaf.veinTint);
+            drawVeinLine(g, 0, -s * 0.15, s * 0.32, -s * 0.42, 0.65, 'rgba(255,255,255,0.16)');
+            drawVeinLine(g, 0, -s * 0.15, -s * 0.32, -s * 0.42, 0.65, 'rgba(255,255,255,0.16)');
+            drawVeinLine(g, 0, s * 0.12, s * 0.45, -s * 0.02, 0.55, 'rgba(255,255,255,0.13)');
+            drawVeinLine(g, 0, s * 0.12, -s * 0.45, -s * 0.02, 0.55, 'rgba(255,255,255,0.13)');
+            drawVeinLine(g, 0, s * 0.42, s * 0.35, s * 0.32, 0.55, 'rgba(255,255,255,0.12)');
+            drawVeinLine(g, 0, s * 0.42, -s * 0.35, s * 0.32, 0.55, 'rgba(255,255,255,0.12)');
 
-            ctx.beginPath();
-            ctx.moveTo(0, s * 1.18);
-            ctx.lineTo(0, s * 1.42);
-            ctx.strokeStyle = leaf.colorB;
-            ctx.lineWidth = 1.0;
-            ctx.stroke();
-
+            g.beginPath();
+            g.moveTo(0, s * 1.18);
+            g.lineTo(0, s * 1.42);
+            g.strokeStyle = leaf.colorB;
+            g.lineWidth = 1.0;
+            g.stroke();
         } else if (leaf.type === 2) {
             // Pointed birch-like leaf
-            ctx.beginPath();
-            ctx.moveTo(0, -s * 1.12);
-            ctx.quadraticCurveTo(s * 0.62, -s * 0.42, s * 0.34, s * 0.78);
-            ctx.quadraticCurveTo(0, s * 1.14, -s * 0.34, s * 0.78);
-            ctx.quadraticCurveTo(-s * 0.62, -s * 0.42, 0, -s * 1.12);
-            ctx.fillStyle = grad;
-            ctx.fill();
+            g.beginPath();
+            g.moveTo(0, -s * 1.12);
+            g.quadraticCurveTo(s * 0.62, -s * 0.42, s * 0.34, s * 0.78);
+            g.quadraticCurveTo(0, s * 1.14, -s * 0.34, s * 0.78);
+            g.quadraticCurveTo(-s * 0.62, -s * 0.42, 0, -s * 1.12);
+            g.fillStyle = grad;
+            g.fill();
 
-            ctx.save();
-            ctx.clip();
-            ctx.fillStyle = highlight;
-            ctx.fillRect(-s, -s, s * 2, s * 2);
-            ctx.restore();
+            g.save();
+            g.clip();
+            g.fillStyle = highlight;
+            g.fillRect(-s, -s, s * 2, s * 2);
+            g.restore();
 
-            drawVeinLine(0, -s * 0.88, 0, s * 0.86, 1.0, leaf.veinTint);
-            drawVeinLine(0, -s * 0.18, s * 0.18, s * 0.05, 0.5, 'rgba(255,255,255,0.14)');
-            drawVeinLine(0, 0.12 * s, -s * 0.16, s * 0.26, 0.5, 'rgba(255,255,255,0.12)');
-            drawVeinLine(0, s * 0.38, s * 0.13, s * 0.52, 0.5, 'rgba(255,255,255,0.10)');
-            drawVeinLine(0, s * 0.38, -s * 0.13, s * 0.52, 0.5, 'rgba(255,255,255,0.10)');
+            drawVeinLine(g, 0, -s * 0.88, 0, s * 0.86, 1.0, leaf.veinTint);
+            drawVeinLine(g, 0, -s * 0.18, s * 0.18, s * 0.05, 0.5, 'rgba(255,255,255,0.14)');
+            drawVeinLine(g, 0, 0.12 * s, -s * 0.16, s * 0.26, 0.5, 'rgba(255,255,255,0.12)');
+            drawVeinLine(g, 0, s * 0.38, s * 0.13, s * 0.52, 0.5, 'rgba(255,255,255,0.10)');
+            drawVeinLine(g, 0, s * 0.38, -s * 0.13, s * 0.52, 0.5, 'rgba(255,255,255,0.10)');
 
-            ctx.beginPath();
-            ctx.moveTo(0, s * 1.14);
-            ctx.lineTo(0, s * 1.38);
-            ctx.strokeStyle = leaf.colorB;
-            ctx.lineWidth = 1.0;
-            ctx.stroke();
-
+            g.beginPath();
+            g.moveTo(0, s * 1.14);
+            g.lineTo(0, s * 1.38);
+            g.strokeStyle = leaf.colorB;
+            g.lineWidth = 1.0;
+            g.stroke();
         } else {
             // Small curled leaf
-            ctx.beginPath();
-            ctx.moveTo(0, -s * 0.95);
-            ctx.quadraticCurveTo(s * 0.85, -s * 0.25, s * 0.26, s * 0.88);
-            ctx.quadraticCurveTo(0, s * 0.62, -s * 0.26, s * 0.88);
-            ctx.quadraticCurveTo(-s * 0.85, -s * 0.25, 0, -s * 0.95);
-            ctx.fillStyle = grad;
-            ctx.fill();
+            g.beginPath();
+            g.moveTo(0, -s * 0.95);
+            g.quadraticCurveTo(s * 0.85, -s * 0.25, s * 0.26, s * 0.88);
+            g.quadraticCurveTo(0, s * 0.62, -s * 0.26, s * 0.88);
+            g.quadraticCurveTo(-s * 0.85, -s * 0.25, 0, -s * 0.95);
+            g.fillStyle = grad;
+            g.fill();
 
-            ctx.save();
-            ctx.clip();
-            ctx.fillStyle = highlight;
-            ctx.fillRect(-s, -s, s * 2, s * 2);
-            ctx.restore();
+            g.save();
+            g.clip();
+            g.fillStyle = highlight;
+            g.fillRect(-s, -s, s * 2, s * 2);
+            g.restore();
 
-            drawVeinLine(0, -s * 0.72, 0, s * 0.72, 0.9, leaf.veinTint);
-            drawVeinLine(0, -s * 0.1, s * 0.16, s * 0.12, 0.45, 'rgba(255,255,255,0.12)');
-            drawVeinLine(0, -s * 0.1, -s * 0.16, s * 0.12, 0.45, 'rgba(255,255,255,0.12)');
+            drawVeinLine(g, 0, -s * 0.72, 0, s * 0.72, 0.9, leaf.veinTint);
+            drawVeinLine(g, 0, -s * 0.1, s * 0.16, s * 0.12, 0.45, 'rgba(255,255,255,0.12)');
+            drawVeinLine(g, 0, -s * 0.1, -s * 0.16, s * 0.12, 0.45, 'rgba(255,255,255,0.12)');
         }
 
-        ctx.restore();
+        g.restore();
+
+        leaf.sprite = sprite;
+        leaf.spriteW = cssSize;
+        leaf.spriteH = cssSize;
     }
 
+    for (let i = 0; i < LEAF_COUNT; i++) {
+        const leaf = makeLeaf(true);
+        buildSprite(leaf);
+        leaves.push(leaf);
+    }
+
+    window.addEventListener('resize', resize, { passive: true });
+    resize();
+
     let lastTime = performance.now();
+
+    function respawnLeaf(leaf) {
+        const fresh = makeLeaf(false);
+        fresh.x = rand(-80, W + 80);
+        fresh.y = rand(-140, -20);
+        buildSprite(fresh);
+        Object.assign(leaf, fresh);
+    }
 
     function tick(now) {
         const dt = Math.min(2.2, (now - lastTime) / 16.6667);
         lastTime = now;
 
         ctx.clearRect(0, 0, W, H);
-
-        // subtle atmospheric fade for smoother motion
-        ctx.save();
-        ctx.globalAlpha = 0.06;
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, W, H);
-        ctx.restore();
 
         for (const leaf of leaves) {
             leaf.windPhase += leaf.windSpeed * dt;
@@ -268,22 +297,36 @@
             leaf.y += leaf.baseSpeed * (0.7 + leaf.depth * 0.8) * dt;
             leaf.rotation += leaf.rotSpeed * dt + Math.sin(leaf.windPhase * 0.8) * 0.003 * dt;
 
-            // gentle curve drift
+            // small side drift for depth
             leaf.x += Math.cos(leaf.windPhase * 0.6) * 0.08 * leaf.depth * dt;
 
             if (leaf.y > H + 80 || leaf.x < -120 || leaf.x > W + 120) {
-                const fresh = makeLeaf(false);
-                fresh.x = rand(-80, W + 80);
-                fresh.y = rand(-140, -20);
-                Object.assign(leaf, fresh);
+                respawnLeaf(leaf);
+                continue;
             }
 
-            // soft blur for distance
-            ctx.filter = leaf.blur > 0.01 ? `blur(${leaf.blur.toFixed(2)}px)` : 'none';
-            drawLeafShape(leaf);
+            const sprite = leaf.sprite;
+            if (!sprite) continue;
+
+            ctx.save();
+            ctx.translate(leaf.x, leaf.y);
+            ctx.rotate(leaf.rotation);
+            ctx.globalAlpha = leaf.opacity;
+
+            // tiny scale variation keeps motion alive without extra draw cost
+            const scale = 0.98 + Math.sin(leaf.wobbleSeed * 0.7) * 0.02;
+            ctx.scale(scale, scale);
+
+            ctx.drawImage(
+                sprite,
+                -leaf.spriteW / 2,
+                -leaf.spriteH / 2,
+                leaf.spriteW,
+                leaf.spriteH
+            );
+            ctx.restore();
         }
 
-        ctx.filter = 'none';
         requestAnimationFrame(tick);
     }
 
