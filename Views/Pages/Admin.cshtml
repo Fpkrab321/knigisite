@@ -1,0 +1,171 @@
+@{
+    ViewData["Title"] = "Панель управления";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="admin-wrapper" id="adminWrapper" style="display:none;">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-logo">
+            <div class="georgibon-mini">
+                <div class="ribbon-stripe black"></div>
+                <div class="ribbon-stripe orange"></div>
+                <div class="ribbon-stripe black"></div>
+            </div>
+            <span>Библиотека</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-section="books">📚 Книги</a>
+            <a href="#" class="nav-item" data-section="add">➕ Добавить книгу</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logoutBtn">⚙ Выйти</button>
+            <a href="/" class="goto-site">🌐 На сайт</a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="admin-main">
+        <!-- BOOKS LIST SECTION -->
+        <section id="section-books" class="admin-section active">
+            <div class="section-header">
+                <h2>Список книг</h2>
+                <button class="primary-btn" onclick="showSection('add')">+ Добавить книгу</button>
+            </div>
+            <div class="books-table-wrap">
+                <table class="books-table">
+                    <thead>
+                        <tr>
+                            <th>Обложка</th>
+                            <th>Название / Автор</th>
+                            <th>Жанр</th>
+                            <th>Год</th>
+                            <th>Избранное</th>
+                            <th>Текст</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminBooksBody">
+                        <tr><td colspan="7" style="text-align:center;padding:32px;color:#aaa;">Загрузка...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ADD / EDIT SECTION -->
+        <section id="section-add" class="admin-section" style="display:none;">
+            <div class="section-header">
+                <h2 id="formTitle">Добавить книгу</h2>
+                <button class="secondary-btn" onclick="showSection('books')">← К списку</button>
+            </div>
+            <form class="book-form" id="bookForm">
+                <input type="hidden" id="editBookId"/>
+                <div class="form-grid">
+                    <div class="form-col">
+                        <div class="field-group">
+                            <label>Название *</label>
+                            <input type="text" id="fTitle" required placeholder="Война и мир"/>
+                        </div>
+                        <div class="field-group">
+                            <label>Автор *</label>
+                            <input type="text" id="fAuthor" required placeholder="Лев Толстой"/>
+                        </div>
+                        <div class="field-group">
+                            <label>Жанр</label>
+                            <input type="text" id="fGenre" placeholder="Роман-эпопея"/>
+                        </div>
+                        <div class="field-group">
+                            <label>Год</label>
+                            <input type="number" id="fYear" placeholder="1869" min="1000" max="2100"/>
+                        </div>
+                        <div class="field-group">
+                            <label>Теги (через запятую)</label>
+                            <input type="text" id="fTags" placeholder="классика, война, патриотизм"/>
+                        </div>
+                        <div class="field-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="fFeatured"/>
+                                Избранная книга
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="field-group">
+                            <label>Краткое описание</label>
+                            <textarea id="fShortDesc" rows="3" placeholder="Краткое описание книги..."></textarea>
+                        </div>
+                        <div class="field-group">
+                            <label>Полное описание</label>
+                            <textarea id="fDesc" rows="6" placeholder="Подробное описание книги..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOOK TEXT SECTION -->
+                <div class="book-text-section">
+                    <h3>📖 Текст книги</h3>
+                    <p>Вставьте полный текст книги для встроенной читалки. Поддерживается произвольный объём текста.</p>
+                    <textarea id="fBookText" placeholder="Вставьте текст книги здесь...&#10;&#10;Глава 1&#10;&#10;..."></textarea>
+                    <div class="text-count" id="textCount">0 символов</div>
+                </div>
+
+                <!-- IMAGE UPLOAD & EDITOR -->
+                <div class="image-section">
+                    <h3>Обложка книги</h3>
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+                                <rect width="48" height="48" rx="8" fill="#f0ebe3"/>
+                                <path d="M24 14v20M14 24h20" stroke="#a08060" stroke-width="2.5" stroke-linecap="round"/>
+                            </svg>
+                            <span>Нажмите или перетащите изображение</span>
+                            <span class="upload-hint">JPG, PNG, WEBP до 10MB</span>
+                        </div>
+                        <input type="file" id="imageInput" accept="image/*" style="display:none"/>
+                    </div>
+
+                    <div class="image-editor" id="imageEditor" style="display:none;">
+                        <div class="editor-canvas-wrap">
+                            <canvas id="editorCanvas"></canvas>
+                            <div class="crop-overlay" id="cropOverlay" style="display:none;">
+                                <div class="crop-box" id="cropBox">
+                                    <div class="crop-handle tl"></div>
+                                    <div class="crop-handle tr"></div>
+                                    <div class="crop-handle bl"></div>
+                                    <div class="crop-handle br"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="editor-toolbar">
+                            <button type="button" class="tool-btn" id="btnCrop">✂ Обрезать</button>
+                            <button type="button" class="tool-btn" id="btnRotateL">↺ −90°</button>
+                            <button type="button" class="tool-btn" id="btnRotateR">↻ +90°</button>
+                            <button type="button" class="tool-btn" id="btnFlipH">⇆ По горизонтали</button>
+                            <button type="button" class="tool-btn active" id="btnApply" style="display:none;">✓ Применить обрезку</button>
+                            <button type="button" class="tool-btn danger" id="btnRemoveImg">🗑 Убрать фото</button>
+                        </div>
+                        <div class="editor-preview-row">
+                            <div class="preview-label">Предпросмотр:</div>
+                            <canvas id="previewCanvas" width="120" height="160"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="primary-btn" id="saveBookBtn">💾 Сохранить книгу</button>
+                    <button type="button" class="secondary-btn" onclick="showSection('books')">Отмена</button>
+                </div>
+                <div id="formStatus" class="form-status"></div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<!-- Auth gate -->
+<div class="auth-gate" id="authGate">
+    <p>Загрузка...</p>
+</div>
+
+@section Scripts {
+    <script src="/js/admin.js"></script>
+}

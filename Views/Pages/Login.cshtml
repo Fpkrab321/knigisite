@@ -1,0 +1,64 @@
+@{
+    ViewData["Title"] = "Вход в панель управления";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="login-page">
+    <div class="login-card">
+        <div class="georgibon-ribbon small">
+            <div class="ribbon-stripe black"></div>
+            <div class="ribbon-stripe orange"></div>
+            <div class="ribbon-stripe black"></div>
+            <div class="ribbon-stripe orange"></div>
+            <div class="ribbon-stripe black"></div>
+        </div>
+        <div class="login-header">
+            <div class="birch-icon">🌳</div>
+            <h1>Панель управления</h1>
+            <p>Русская Библиотека</p>
+        </div>
+        <form class="login-form" id="loginForm">
+            <div class="field-group">
+                <label>Логин</label>
+                <input type="text" id="loginUsername" placeholder="admin" autocomplete="username"/>
+            </div>
+            <div class="field-group">
+                <label>Пароль</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
+            </div>
+            <div class="error-msg" id="loginError"></div>
+            <button type="submit" class="login-btn">Войти</button>
+        </form>
+        <a href="/" class="back-link">← На главную</a>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+
+    try {
+        const resp = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+            errorEl.textContent = data.message || 'Ошибка входа';
+            errorEl.style.display = 'block';
+            return;
+        }
+        localStorage.setItem('adminToken', data.token);
+        window.location.href = '/admin';
+    } catch {
+        errorEl.textContent = 'Ошибка соединения';
+        errorEl.style.display = 'block';
+    }
+});
+</script>
+}
