@@ -50,7 +50,7 @@ body {
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    background: url('assets/fon.png') center/cover no-repeat;
+    background: url('azov/fon.png') center/cover no-repeat;
     transform: translateZ(0); /* Аппаратное ускорение */
 }
 
