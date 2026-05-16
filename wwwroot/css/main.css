@@ -44,163 +44,17 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== MAXIMALLY DETAILED FOREST BACKGROUND ===== */
+/* ===== IMAGE BACKGROUND ===== */
 .forest-scene {
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    overflow: hidden;
-    isolation: isolate;
-    transform: translateZ(0);
-    contain: layout paint style;
-    
-    /* Base Sky and Atmospheric Particles */
-    background:
-        /* Sun Glow */
-        radial-gradient(circle at 75% 15%, rgba(255, 250, 235, 0.9) 0%, rgba(255, 250, 235, 0.25) 20%, transparent 55%),
-        /* Glowing Dust Motes */
-        radial-gradient(circle at 15% 30%, rgba(255, 255, 255, 0.7) 0, transparent 2px),
-        radial-gradient(circle at 82% 38%, rgba(255, 255, 255, 0.6) 0, transparent 3px),
-        radial-gradient(circle at 45% 65%, rgba(255, 255, 255, 0.8) 0, transparent 2.5px),
-        radial-gradient(circle at 25% 75%, rgba(255, 255, 255, 0.5) 0, transparent 2px),
-        radial-gradient(circle at 60% 80%, rgba(255, 255, 255, 0.6) 0, transparent 2px),
-        /* Atmospheric Sky Gradients */
-        linear-gradient(180deg, #d2e0c1 0%, #e2ecd4 25%, #f1f4e6 55%, #f8f4ed 100%);
+    background: url('azov/fon.png') center/cover no-repeat;
+    transform: translateZ(0); /* Аппаратное ускорение */
 }
 
-/* Background Mid-Layer: God Rays, Distant Out-of-Focus Trees and Mist */
-.forest-scene::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    filter: blur(1.5px);
-    background-image:
-        /* Sunbeams (God Rays) */
-        linear-gradient(110deg, transparent 25%, rgba(255,253,240,0.18) 35%, transparent 50%),
-        linear-gradient(115deg, transparent 40%, rgba(255,253,240,0.14) 50%, transparent 65%),
-        linear-gradient(105deg, transparent 60%, rgba(255,253,240,0.1) 70%, transparent 80%),
-        
-        /* TREE 3: Background Left (Out of focus) */
-        repeating-linear-gradient(1deg, transparent 0, transparent 35px, rgba(50,50,50,0.5) 36px, transparent 38px),
-        linear-gradient(90deg, #555 0%, #c4bcae 30%, #e2dcd0 60%, #8c8577 85%, #333 100%),
-        
-        /* TREE 4: Background Right (Out of focus) */
-        repeating-linear-gradient(-0.5deg, transparent 0, transparent 45px, rgba(45,45,45,0.5) 46px, transparent 48px),
-        linear-gradient(90deg, #444 0%, #9e9788 15%, #d1c8b6 50%, #b5ad9e 85%, #444 100%),
-        
-        /* Blurry Silhouette Trees in the far distance */
-        linear-gradient(90deg, rgba(80,95,70,0.3) 0%, rgba(110,125,100,0.5) 50%, rgba(60,75,50,0.3) 100%),
-        linear-gradient(90deg, rgba(70,85,60,0.2) 0%, rgba(90,105,80,0.4) 50%, rgba(50,65,40,0.2) 100%),
-        
-        /* Distant Ground Mist */
-        linear-gradient(180deg, transparent 55%, rgba(130, 150, 110, 0.25) 75%, rgba(60, 82, 44, 0.45) 100%);
-
-    background-size:
-        100% 100%, 100% 100%, 100% 100%, /* Rays */
-        2.5vw 100%, 2.5vw 100%, /* T3 */
-        3vw 100%, 3vw 100%, /* T4 */
-        1.5vw 100%, 2vw 100%, /* Silhouettes */
-        100% 100%; /* Mist */
-        
-    background-position:
-        0 0, 0 0, 0 0,
-        32% 0, 32% 0,
-        66% 0, 66% 0,
-        45% 0, 56% 0,
-        0 0;
-        
-    background-repeat: no-repeat;
-    opacity: 0.95;
-}
-
-/* Foreground Layer: Crisp Detailed Birches, Forest Floor, Shadow Depth */
-.forest-scene::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-        /* Foreground Atmospheric Mist */
-        linear-gradient(180deg, transparent 65%, rgba(248, 244, 237, 0.3) 82%, rgba(34, 54, 29, 0.5) 100%),
-
-        /* TREE 1: Foreground Left (Highest Detail) */
-        radial-gradient(ellipse at 50% 30%, #111 0%, #222 5px, transparent 6px), /* Knot */
-        radial-gradient(ellipse at 30% 75%, #111 0%, #111 4px, transparent 5px), /* Knot */
-        repeating-linear-gradient(2deg, transparent 0, transparent 50px, rgba(20,20,20,0.85) 52px, rgba(10,10,10,0.95) 55px, transparent 58px), /* Jagged Bark Slashes */
-        repeating-linear-gradient(-3deg, transparent 0, transparent 85px, rgba(30,30,30,0.8) 87px, rgba(15,15,15,0.9) 92px, transparent 94px), /* Jagged Bark Slashes */
-        linear-gradient(90deg, #050505 0%, #6b6459 8%, #f0eae1 25%, #ffffff 50%, #d1c8b6 85%, #0a0a0a 100%), /* 3D Cylindrical Shading */
-
-        /* TREE 6: Foreground Right (Highest Detail) */
-        radial-gradient(ellipse at 40% 45%, #111 0%, #111 6px, transparent 8px), /* Knot */
-        repeating-linear-gradient(-2deg, transparent 0, transparent 65px, rgba(15,15,15,0.9) 67px, rgba(5,5,5,0.95) 71px, transparent 73px),
-        repeating-linear-gradient(4deg, transparent 0, transparent 110px, rgba(25,25,25,0.85) 112px, rgba(10,10,10,0.9) 116px, transparent 118px),
-        linear-gradient(90deg, #0a0a0a 0%, #b8b0a2 15%, #ffffff 55%, #e6dfd3 85%, #050505 100%), /* Lighting hits from center-right */
-
-        /* TREE 2: Mid Left */
-        repeating-linear-gradient(1.5deg, transparent 0, transparent 40px, rgba(25,25,25,0.8) 42px, transparent 45px),
-        repeating-linear-gradient(-1deg, transparent 0, transparent 70px, rgba(15,15,15,0.85) 72px, transparent 74px),
-        linear-gradient(90deg, #111 0%, #e6dfd1 25%, #fff 55%, #b5ad9e 85%, #151515 100%),
-
-        /* TREE 5: Mid Right */
-        repeating-linear-gradient(-1.5deg, transparent 0, transparent 55px, rgba(25,25,25,0.8) 57px, transparent 59px),
-        repeating-linear-gradient(2.5deg, transparent 0, transparent 80px, rgba(20,20,20,0.85) 82px, transparent 84px),
-        linear-gradient(90deg, #151515 0%, #a8a193 15%, #fff 60%, #e2dcd0 85%, #111 100%),
-
-        /* Detailed Forest Floor Front */
-        radial-gradient(ellipse at 50% 105%, rgba(25, 42, 20, 1) 0%, rgba(45, 74, 37, 0.95) 30%, transparent 70%);
-
-    background-size:
-        100% 100%, /* Mist */
-        8vw 100%, 8vw 100%, 8vw 100%, 8vw 100%, 8vw 100%, /* Tree 1 Elements */
-        9.5vw 100%, 9.5vw 100%, 9.5vw 100%, 9.5vw 100%, /* Tree 6 Elements */
-        4.5vw 100%, 4.5vw 100%, 4.5vw 100%, /* Tree 2 Elements */
-        5.5vw 100%, 5.5vw 100%, 5.5vw 100%, /* Tree 5 Elements */
-        100% 20vh; /* Floor */
-
-    background-position:
-        0 0, /* Mist */
-        4% 0, 4% 0, 4% 0, 4% 0, 4% 0, /* Tree 1 Position */
-        94% 0, 94% 0, 94% 0, 94% 0, /* Tree 6 Position */
-        18% 0, 18% 0, 18% 0, /* Tree 2 Position */
-        82% 0, 82% 0, 82% 0, /* Tree 5 Position */
-        bottom center; /* Floor Position */
-        
-    background-repeat: no-repeat;
-    transform: translateZ(0);
-}
-
-/* Mid-layer trees, better if you place an SVG tree layer in HTML */
-.forest-svg {
-    position: absolute;
-    bottom: -1px;
-    left: 50%;
-    width: min(144vw, 1760px);
-    height: auto;
-    transform: translateX(-50%);
-    opacity: 0.98;
-    filter:
-        drop-shadow(0 12px 20px rgba(25, 35, 18, 0.20))
-        drop-shadow(0 2px 2px rgba(255,255,255,0.08));
-    mix-blend-mode: multiply;
-    pointer-events: none;
-    will-change: transform;
-}
-
-.forest-svg * {
-    shape-rendering: geometricPrecision;
-    vector-effect: non-scaling-stroke;
-}
-
-.forest-svg path,
-.forest-svg line,
-.forest-svg rect,
-.forest-svg circle,
-.forest-svg ellipse {
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-/* Leaf layer */
+/* Leaf layer (оставлен на случай, если вы используете JS для падающих листьев) */
 #leafCanvas {
     position: fixed;
     inset: 0;
